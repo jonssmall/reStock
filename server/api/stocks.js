@@ -1,21 +1,25 @@
 const axios = require('axios');
 
+//Default range is 1 year ago through today.
+const now = new Date();
+const defaultStartDate = {    
+    now: now,
+    year: now.getFullYear() - 1,
+    month: now.getMonth() + 1,
+    day: now.getDate(),
+};
 
-//https.get(`https://www.quandl.com/api/v3/datasets/WIKI/${name}.json?api_key=${process.env.QUANDL_KEY}&start_date=${year - 1}-${month}-${date}&end_date=${year}-${month}-${date}`, res => {}
+const defaultEndDate = {
+    now: now,
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+    day: now.getDate(),
+};
 
-//Considerations:
-//What is a default timeline? 1 year to today? Default arguments?
-
-var Stocks = function () {};
-
-Stocks.prototype.getBySymbol = function (name) {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const date = now.getDate();
-
+const Stocks = function () {};
+Stocks.prototype.getBySymbol = function (name, startDate = defaultStartDate, endDate = defaultEndDate) {    
     const url = `https://www.quandl.com/api/v3/datasets/WIKI/${name}.json?`
-    const parameters = `api_key=${process.env.QUANDL_KEY}&start_date=${year - 1}-${month}-${date}&end_date=${year}-${month}-${date}`
+    const parameters = `api_key=${process.env.QUANDL_KEY}&start_date=${startDate.year}-${startDate.month}-${startDate.day}&end_date=${endDate.year}-${endDate.month}-${endDate.day}`
 
     return axios.get(`${url}${parameters}`)
         .then(response => {            

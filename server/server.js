@@ -10,7 +10,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/stocks', (req, res) => {    
-    Stocks.getBySymbol('FB')
+    Stocks.getBySymbol(req.query.symbol)
         .then(response => {                      
             res.json(response.data);
         }).catch(error => {
