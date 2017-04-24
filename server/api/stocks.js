@@ -24,8 +24,9 @@ Stocks.prototype.getBySymbol = function (name, startDate = defaultStartDate, end
     return axios.get(`${url}${parameters}`)
         .then(response => {            
             return response
-        }).catch(error => {
+        }).catch(error => {            
             console.log(error);
+            throw error;
         });
 };
 
