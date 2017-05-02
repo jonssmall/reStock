@@ -1,8 +1,14 @@
 const searchBtn = document.querySelector("#search-btn");
+
+// push { symbol: symbol.toUpperCase(), dataset: res.dataset }
+const dataContainer = [];
+
 searchBtn.onclick = () => {
   const symbol = document.querySelector("#symbol-input").value;  
   ajaxGet(`/api/stocks?symbol=${symbol}`, (res) => {
-    buildChart(res.dataset);
+    //buildChart(res.dataset);
+    dataContainer.push({'symbol': symbol.toUpperCase(), dataset: res.dataset});
+    buildChart(dataContainer);
   });
 };
 
@@ -25,21 +31,25 @@ const ajaxGet = (url, successCallback) => {
   };
 }
 
-const buildChart = (dataset) => {
-  let data = [];
-  let dataSeries = { type: "line" };
-  let dataPoints = [];
+const buildChart = (dataContainer) => {
+  let chartData = [];
+  
+  for(stock of dataContainer) {
+    let dataSeries = { type: "line" };
+    let dataPoints = [];
+    stock.dataset.data.map(point => {
+      dataPoints.push({
+        x: new Date(point[0]),
+        y: point[4]
+      });
+    });  
 
-  dataset.data.map(point => {
-    dataPoints.push({
-      x: new Date(point[0]),
-      y: point[4]
-    });
-  });  
-
-  dataSeries.dataPoints = dataPoints;
-  data.push(dataSeries);
-  console.log(data);
+    dataSeries.dataPoints = dataPoints;
+    dataSeries.name = stock.symbol;
+    dataSeries.showInLegend = true;  
+    chartData.push(dataSeries);
+  }    
+  //console.log(data);
 
 	const chart = new CanvasJS.Chart("chartContainer",
 	{
@@ -54,7 +64,7 @@ const buildChart = (dataset) => {
 		axisY :{
 			includeZero:false
 		},
-		data: data  
+		data: chartData  
 	});
 	chart.render();
 };
