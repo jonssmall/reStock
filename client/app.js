@@ -1,14 +1,11 @@
 const searchBtn = document.querySelector("#search-btn");
-
-// push { symbol: symbol.toUpperCase(), dataset: res.dataset }
-const dataContainer = [];
+const financialContainer = [];
 
 searchBtn.onclick = () => {
   const symbol = document.querySelector("#symbol-input").value;  
-  ajaxGet(`/api/stocks?symbol=${symbol}`, (res) => {
-    //buildChart(res.dataset);
-    dataContainer.push({'symbol': symbol.toUpperCase(), dataset: res.dataset});
-    buildChart(dataContainer);
+  ajaxGet(`/api/stocks?symbol=${symbol}`, (res) => {    
+    financialContainer.push({'symbol': symbol.toUpperCase(), dataset: res.dataset});
+    buildChart(financialContainer);
   });
 };
 
@@ -21,8 +18,7 @@ const ajaxGet = (url, successCallback) => {
     const DONE = 4; 
     const OK = 200; 
     if (xhr.readyState === DONE) {
-      if (xhr.status === OK) {
-        //console.log(xhr.responseText);
+      if (xhr.status === OK) {        
         successCallback(JSON.parse(xhr.responseText));
       } else {
         console.log('Error: ' + xhr.status);
@@ -31,10 +27,10 @@ const ajaxGet = (url, successCallback) => {
   };
 }
 
-const buildChart = (dataContainer) => {
+const buildChart = (financialContainer) => {
   let chartData = [];
   
-  for(stock of dataContainer) {
+  for(stock of financialContainer) {
     let dataSeries = { type: "line" };
     let dataPoints = [];
     stock.dataset.data.map(point => {
@@ -48,8 +44,7 @@ const buildChart = (dataContainer) => {
     dataSeries.name = stock.symbol;
     dataSeries.showInLegend = true;  
     chartData.push(dataSeries);
-  }    
-  //console.log(data);
+  }      
 
 	const chart = new CanvasJS.Chart("chartContainer",
 	{
@@ -66,5 +61,6 @@ const buildChart = (dataContainer) => {
 		},
 		data: chartData  
 	});
+
 	chart.render();
 };
