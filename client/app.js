@@ -4,8 +4,9 @@ const financialContainer = [];
 searchBtn.onclick = () => {
   const symbol = document.querySelector("#symbol-input").value;  
   ajaxGet(`/api/stocks?symbol=${symbol}`, (res) => {    
-    financialContainer.push({'symbol': symbol.toUpperCase(), dataset: res.dataset});
-    buildChart(financialContainer);
+    console.log(res);
+    //financialContainer.push({'symbol': symbol.toUpperCase(), dataset: res.dataset});
+    //buildChart(financialContainer);
   });
 };
 
@@ -64,3 +65,10 @@ const buildChart = (financialContainer) => {
 
 	chart.render();
 };
+
+
+var exampleSocket = new WebSocket("ws://localhost:8080");
+
+exampleSocket.onmessage = function (event) {
+  console.log(JSON.parse(event.data));
+}
