@@ -34,6 +34,14 @@ app.get('/api/stocks', (req, res) => {
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+wss.on('connection', function connection(ws) {  
+    wss.clients.forEach(function each(client) {
+        if (client == ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(symbolContainer));
+        }    
+    });
+});
+
 const port = process.env.PORT || 3000;
 server.listen(port, () => {
     console.log(`Example app listening on port ${port}!`);
