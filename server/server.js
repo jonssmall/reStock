@@ -5,7 +5,7 @@ const WebSocket = require('ws');
 const Stocks = require('./api/stocks.js');
 require('dotenv').config();
 
-let symbolContainer = [];
+let financialContainer = [];
 
 app.use(express.static('client'))
 
@@ -13,18 +13,30 @@ app.get('/', (req, res) => {
     res.sendFile(process.cwd() + '/client/index.html');
 });
 
+
+
+
+
 app.get('/api/stocks', (req, res) => {    
     const symbol = req.query.symbol;        
     Stocks.getBySymbol(symbol)
         .then(response => {         
-            symbolContainer.push(symbol.toUpperCase());
-            symbolContainer = [ ...new Set(symbolContainer) ] //es6 array filtered for uniques                         
+            financialContainer.push({'symbol': symbol.toUpperCase(), 'dataset': response.data.dataset});
+            let map = new Map();
+            for (element of financialContainer) {
+                map.set(element.symbol, element);
+            }
+            let filteredData = [];
+            map.forEach( (value, key, map) => {
+                filteredData.push(value);
+            });
+            financialContainer = filteredData; //array of unique objects filtered by symbol.
             wss.clients.forEach(function each(client) {
                 if (client.readyState === WebSocket.OPEN) {
-                    client.send(JSON.stringify(symbolContainer));
+                    client.send(JSON.stringify(financialContainer));
                 }
             });
-            res.json(response.data);
+            res.json("Done");
         }).catch(error => {            
             console.log(error);
             res.status(500).send('Stock Not Found')
@@ -37,7 +49,7 @@ const wss = new WebSocket.Server({ server });
 wss.on('connection', function connection(ws) {  
     wss.clients.forEach(function each(client) {
         if (client == ws && client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(symbolContainer));
+            client.send(JSON.stringify(financialContainer));
         }    
     });
 });

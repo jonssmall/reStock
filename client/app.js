@@ -2,11 +2,12 @@ const searchBtn = document.querySelector("#search-btn");
 const financialContainer = [];
 
 searchBtn.onclick = () => {
-  const symbol = document.querySelector("#symbol-input").value;  
-  ajaxGet(`/api/stocks?symbol=${symbol}`, (res) => {    
-    console.log(res);
+  const symbol = document.querySelector("#symbol-input").value;    
+  ajaxGet(`/api/stocks?symbol=${symbol}`, (res) => {        
     //financialContainer.push({'symbol': symbol.toUpperCase(), dataset: res.dataset});
+    //console.log(financialContainer);
     //buildChart(financialContainer);
+    console.log(res);
   });
 };
 
@@ -20,7 +21,7 @@ const ajaxGet = (url, successCallback) => {
     const OK = 200; 
     if (xhr.readyState === DONE) {
       if (xhr.status === OK) {        
-        successCallback(JSON.parse(xhr.responseText));
+        successCallback(xhr.responseText);
       } else {
         console.log('Error: ' + xhr.status);
       }
@@ -67,8 +68,21 @@ const buildChart = (financialContainer) => {
 };
 
 
-var exampleSocket = new WebSocket("ws://localhost:8080");
+var clientSocket = new WebSocket("ws://localhost:8080");
 
-exampleSocket.onmessage = function (event) {
-  console.log(JSON.parse(event.data));
+clientSocket.onmessage = function (event) {
+  const symbolList = JSON.parse(event.data);
+  console.log(symbolList);
+  // for (let symbol of symbolList) {
+  //   let exists = financialContainer.some(function(element) {
+  //     let sym = element.symbol;
+  //     return element.symbol == symbol;
+  //   });    
+  //   if (!exists) {
+  //     ajaxGet(`/api/stocks?symbol=${symbol}`, (res) => {        
+  //       financialContainer.push({'symbol': symbol.toUpperCase(), dataset: res.dataset});
+  //       console.log(financialContainer);      
+  //     });
+  //   }
+  // }
 }
