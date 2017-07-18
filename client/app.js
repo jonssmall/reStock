@@ -49,8 +49,8 @@ const buildChart = (financialContainer) => {
   //console.log(chartData);
 	const chart = new CanvasJS.Chart("chartContainer",
 	{
-		//zoomEnabled: false,
-		//animationEnabled: false ,
+		zoomEnabled: false,
+		animationEnabled: false ,
 		title:{
 			text: "1 Year Performance" 
 		},
@@ -60,7 +60,7 @@ const buildChart = (financialContainer) => {
 		},
 		axisY :{
 			includeZero:false
-		}		
+    }    
 	});
 
 	chart.render();
@@ -76,8 +76,7 @@ var clientSocket = new WebSocket("ws://localhost:8080");
 
 clientSocket.onmessage = function (event) {  
   const socketData = JSON.parse(event.data); // [{symbol:"fb", dataset: obj}, ...]
-  //buildChart(socketData);
-  //console.log(socketData);
+  buildChart(socketData);  
   listContainer.innerHTML = '';
   socketData.map(d => {    
     const listItem = `
