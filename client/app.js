@@ -1,23 +1,21 @@
 const searchBtn = document.querySelector("#search-btn");
+const listContainer = document.querySelector("#listContainer");
 const financialContainer = [];
 
 searchBtn.onclick = () => {
   const symbol = document.querySelector("#symbol-input").value;    
-  ajaxGet(`/api/stocks?symbol=${symbol}`, (res) => {        
-    //financialContainer.push({'symbol': symbol.toUpperCase(), dataset: res.dataset});
-    //console.log(financialContainer);
-    //buildChart(financialContainer);
+  ajax('GET', `/api/stocks?symbol=${symbol}`, (res) => {            
     console.log(res);
   });
 };
 
-const ajaxGet = (url, successCallback) => {
+const ajax = (verb, url, successCallback) => {
   const xhr = new XMLHttpRequest();
-  xhr.open('GET', `${url}`);
+  xhr.open(verb, `${url}`);
   xhr.send(null);
 
   xhr.onreadystatechange = () => {
-    const DONE = 4; 
+    const DONE = 4;
     const OK = 200; 
     if (xhr.readyState === DONE) {
       if (xhr.status === OK) {        
@@ -37,52 +35,56 @@ const buildChart = (financialContainer) => {
     let dataPoints = [];
     stock.dataset.data.map(point => {
       dataPoints.push({
-        x: new Date(point[0]),
+        x: new Date(point[0]),        
         y: point[4]
       });
     });  
-
-    dataSeries.dataPoints = dataPoints;
+    //console.log(JSON.stringify(dataPoints));    
+    dataSeries.showInLegend = true;
     dataSeries.name = stock.symbol;
-    dataSeries.showInLegend = true;  
+    dataSeries.legendText = stock.symbol;
+    dataSeries.dataPoints = dataPoints;        
     chartData.push(dataSeries);
-  }      
-
+  }
+  //console.log(chartData);
 	const chart = new CanvasJS.Chart("chartContainer",
 	{
-		zoomEnabled: false,
-		animationEnabled: false ,
+		//zoomEnabled: false,
+		//animationEnabled: false ,
 		title:{
 			text: "1 Year Performance" 
 		},
+    data: chartData,
 		axisX :{
 			labelAngle: -30
 		},
 		axisY :{
 			includeZero:false
-		},
-		data: chartData  
+		}		
 	});
 
 	chart.render();
 };
 
+const deleteStock = (symbol) => {  
+  ajax('DELETE', `/api/stocks?symbol=${symbol}`, (res) => {            
+    console.log(res);
+  });
+};
 
 var clientSocket = new WebSocket("ws://localhost:8080");
 
-clientSocket.onmessage = function (event) {
-  const symbolList = JSON.parse(event.data);
-  console.log(symbolList);
-  // for (let symbol of symbolList) {
-  //   let exists = financialContainer.some(function(element) {
-  //     let sym = element.symbol;
-  //     return element.symbol == symbol;
-  //   });    
-  //   if (!exists) {
-  //     ajaxGet(`/api/stocks?symbol=${symbol}`, (res) => {        
-  //       financialContainer.push({'symbol': symbol.toUpperCase(), dataset: res.dataset});
-  //       console.log(financialContainer);      
-  //     });
-  //   }
-  // }
+clientSocket.onmessage = function (event) {  
+  const socketData = JSON.parse(event.data); // [{symbol:"fb", dataset: obj}, ...]  
+  //buildChart(socketData);
+  //console.log(socketData);
+  socketData.map(d => {    
+    const listItem = `
+      <li>
+        ${d.symbol}
+        <button id="${d.symbol}" onclick="deleteStock('${d.symbol}')">Remove</button>
+      </li>
+    `;        
+    listContainer.innerHTML += listItem;        
+  });
 }

@@ -13,10 +13,6 @@ app.get('/', (req, res) => {
     res.sendFile(process.cwd() + '/client/index.html');
 });
 
-
-
-
-
 app.get('/api/stocks', (req, res) => {    
     const symbol = req.query.symbol;        
     Stocks.getBySymbol(symbol)
@@ -41,6 +37,12 @@ app.get('/api/stocks', (req, res) => {
             console.log(error);
             res.status(500).send('Stock Not Found')
         });
+});
+
+app.delete('/api/stocks', (req, res) => {
+    const symbol = req.query.symbol;
+    console.log(symbol);
+    res.status(200).send("Deleted");
 });
 
 const server = http.createServer(app);
