@@ -75,9 +75,10 @@ const deleteStock = (symbol) => {
 var clientSocket = new WebSocket("ws://localhost:8080");
 
 clientSocket.onmessage = function (event) {  
-  const socketData = JSON.parse(event.data); // [{symbol:"fb", dataset: obj}, ...]  
+  const socketData = JSON.parse(event.data); // [{symbol:"fb", dataset: obj}, ...]
   //buildChart(socketData);
   //console.log(socketData);
+  listContainer.innerHTML = '';
   socketData.map(d => {    
     const listItem = `
       <li>

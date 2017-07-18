@@ -27,11 +27,7 @@ app.get('/api/stocks', (req, res) => {
                 filteredData.push(value);
             });
             financialContainer = filteredData; //array of unique objects filtered by symbol.
-            wss.clients.forEach(function each(client) {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(JSON.stringify(financialContainer));
-                }
-            });
+            broadcastStocks();
             res.json("Done");
         }).catch(error => {            
             console.log(error);
@@ -41,19 +37,24 @@ app.get('/api/stocks', (req, res) => {
 
 app.delete('/api/stocks', (req, res) => {
     const symbol = req.query.symbol;
-    console.log(symbol);
+    financialContainer = financialContainer.filter(d => d.symbol != symbol);    
+    broadcastStocks();
     res.status(200).send("Deleted");
 });
+
+const broadcastStocks = () => {
+    wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(financialContainer));
+        }
+    });
+};
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', function connection(ws) {  
-    wss.clients.forEach(function each(client) {
-        if (client == ws && client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(financialContainer));
-        }    
-    });
+    broadcastStocks();
 });
 
 const port = process.env.PORT || 3000;
