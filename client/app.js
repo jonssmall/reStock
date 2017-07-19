@@ -1,6 +1,9 @@
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(buildChart);
+
 const searchBtn = document.querySelector("#search-btn");
 const listContainer = document.querySelector("#listContainer");
-const financialContainer = [];
+let financialContainer;
 
 searchBtn.onclick = () => {
   const symbol = document.querySelector("#symbol-input").value;    
@@ -27,43 +30,16 @@ const ajax = (verb, url, successCallback) => {
   };
 }
 
-const buildChart = (financialContainer) => {
-  let chartData = [];
-  
-  for(stock of financialContainer) {
-    let dataSeries = { type: "line" };
-    let dataPoints = [];
-    stock.dataset.data.map(point => {
-      dataPoints.push({
-        x: new Date(point[0]),        
-        y: point[4]
-      });
-    });  
-    //console.log(JSON.stringify(dataPoints));    
-    dataSeries.showInLegend = true;
-    dataSeries.name = stock.symbol;
-    dataSeries.legendText = stock.symbol;
-    dataSeries.dataPoints = dataPoints;        
-    chartData.push(dataSeries);
-  }
-  //console.log(chartData);
-	const chart = new CanvasJS.Chart("chartContainer",
-	{
-		zoomEnabled: false,
-		animationEnabled: false ,
-		title:{
-			text: "1 Year Performance" 
-		},
-    data: chartData,
-		axisX :{
-			labelAngle: -30
-		},
-		axisY :{
-			includeZero:false
-    }    
-	});
+function buildChart() {  
+  const dataTable = google.visualization.arrayToDataTable(financialContainer);
+  const options = {
+    title: '1 Year Performance',
+    //curveType: 'function',
+    legend: { position: 'bottom' }
+  };
 
-	chart.render();
+  const chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+  chart.draw(dataTable, options);
 };
 
 const deleteStock = (symbol) => {  
@@ -72,11 +48,25 @@ const deleteStock = (symbol) => {
   });
 };
 
-var clientSocket = new WebSocket("ws://localhost:8080");
-
+const clientSocket = new WebSocket("ws://localhost:8080");
 clientSocket.onmessage = function (event) {  
-  const socketData = JSON.parse(event.data); // [{symbol:"fb", dataset: obj}, ...]
-  buildChart(socketData);  
+  const socketData = JSON.parse(event.data);  
+  const stockHash = socketData.reduce((acc, stock) => {            
+    // Top row.
+    acc['Date'] = acc['Date'] ? [...acc['Date'], stock.symbol] : [stock.symbol];
+    stock.dataset.data.map(d => {            
+      // If date already exists, add to its collection the current stock's average.
+      // If not, create a new collection with the current stock's average.      
+      acc[d[0]] = acc[d[0]] ? [...acc[d[0]],d[4]] : [d[4]];              
+    });    
+    return acc
+  }, {});  
+    
+  financialContainer = Object.keys(stockHash).reduce((acc, row) => {
+    const column1 = row === 'Date' ? row : new Date(row);
+    return [...acc, [column1, ...stockHash[row]]];
+  },[]);
+  
   listContainer.innerHTML = '';
   socketData.map(d => {    
     const listItem = `
