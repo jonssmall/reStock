@@ -48,7 +48,14 @@ const deleteStock = (symbol) => {
   });
 };
 
-const clientSocket = new WebSocket("ws://localhost:8080");
+const host = location.origin.replace(/^http/, 'ws'); 
+const clientSocket = new WebSocket(host);
+//Keeps sockets alive on Heroku.
+ws.onopen = function(event) {  
+  setInterval(function() {
+    ws.send('ping');
+  }, 24000);
+};	
 clientSocket.onmessage = function (event) {  
   const socketData = JSON.parse(event.data);  
   const stockHash = socketData.reduce((acc, stock) => {            
