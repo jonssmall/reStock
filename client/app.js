@@ -51,7 +51,7 @@ const deleteStock = (symbol) => {
 const host = location.origin.replace(/^http/, 'ws'); 
 const clientSocket = new WebSocket(host);
 //Keeps sockets alive on Heroku.
-ws.onopen = function(event) {  
+clientSocket.onopen = function(event) {  
   setInterval(function() {
     ws.send('ping');
   }, 24000);
