@@ -1,9 +1,14 @@
 google.charts.load('current', {'packages':['corechart']});
 google.charts.setOnLoadCallback(buildChart);
 
+let chartReady = false;
 const searchBtn = document.querySelector("#search-btn");
 const listContainer = document.querySelector("#listContainer");
 let financialContainer;
+const options = {
+  title: '1 Year Performance',  
+  legend: { position: 'bottom' }
+};
 
 searchBtn.onclick = () => {
   const symbol = document.querySelector("#symbol-input").value;    
@@ -31,13 +36,8 @@ const ajax = (verb, url, successCallback) => {
 }
 
 function buildChart() {  
-  const dataTable = google.visualization.arrayToDataTable(financialContainer);
-  const options = {
-    title: '1 Year Performance',
-    //curveType: 'function',
-    legend: { position: 'bottom' }
-  };
-
+  chartReady = true;
+  const dataTable = google.visualization.arrayToDataTable(financialContainer);  
   const chart = new google.visualization.LineChart(document.getElementById('chart_div'));
   chart.draw(dataTable, options);
 };
@@ -66,6 +66,8 @@ clientSocket.onmessage = function (event) {
     const column1 = row === 'Date' ? row : new Date(row);
     return [...acc, [column1, ...stockHash[row]]];
   },[]);
+
+  if (chartReady) buildChart();
   
   listContainer.innerHTML = '';
   socketData.map(d => {    
