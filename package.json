@@ -4,7 +4,7 @@
   "description": "FCC stock market app built w/ reactJS",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server/server.js --watch server"
+    "start": "node server/server.js "
   },
   "author": "Jon Small",
   "license": "ISC",
