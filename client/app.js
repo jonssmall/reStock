@@ -53,7 +53,7 @@ const clientSocket = new WebSocket(host);
 //Keeps sockets alive on Heroku.
 clientSocket.onopen = function(event) {  
   setInterval(function() {
-    ws.send('ping');
+    clientSocket.send('ping');
   }, 24000);
 };	
 clientSocket.onmessage = function (event) {  
